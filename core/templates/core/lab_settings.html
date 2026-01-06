@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Lab Settings{% endblock %}
+
+{% block content %}
+<section>
+    <div style="margin-bottom: 2rem;">
+        <a href="{% url 'lab_index' %}" style="color: var(--secondary-text); text-decoration: none;">&larr; back to lab</a>
+    </div>
+
+    <h1 class="section-title">settings</h1>
+    
+    <!-- Live Quote Updates Section -->
+    <div style="margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+        <h2 style="font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem;">📊 Live Quote Updates</h2>
+        
+        <form method="POST" style="margin-bottom: 1.5rem;">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="live_quotes_enabled" {% if settings.live_quotes_enabled %}checked{% endif %}
+                           style="width: 18px; height: 18px;">
+                    <span style="font-weight: 500;">Enable automatic live quote updates</span>
+                </label>
+                <p style="color: #666; font-size: 0.85rem; margin: 0.5rem 0 0 0;">
+                    When enabled, prices will update automatically during US market hours (9:30 AM - 4:00 PM ET).
+                </p>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="font-weight: 500; display: block; margin-bottom: 0.5rem;">Update Interval</label>
+                <select name="live_quotes_interval" style="padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; min-width: 150px;">
+                    <option value="5" {% if settings.live_quotes_interval == 5 %}selected{% endif %}>5 minutes</option>
+                    <option value="15" {% if settings.live_quotes_interval == 15 %}selected{% endif %}>15 minutes</option>
+                    <option value="30" {% if settings.live_quotes_interval == 30 %}selected{% endif %}>30 minutes</option>
+                    <option value="60" {% if settings.live_quotes_interval == 60 %}selected{% endif %}>1 hour</option>
+                </select>
+            </div>
+            
+            <button type="submit" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
+                Save Settings
+            </button>
+        </form>
+        
+        <!-- Manual Update -->
+        <div style="border-top: 1px solid #ddd; padding-top: 1.5rem;">
+            <h3 style="font-size: 1rem; font-weight: 600; margin: 0 0 1rem;">Manual Price Update</h3>
+            
+            <div style="margin-bottom: 1rem;">
+                <p style="color: #666; font-size: 0.9rem; margin: 0 0 0.5rem;">
+                    <strong>Last update:</strong> 
+                    {% if settings.last_quote_update %}
+                        {{ settings.last_quote_update|date:"M d, Y H:i" }} 
+                        ({{ settings.last_update_count }} tickers)
+                    {% else %}
+                        Never
+                    {% endif %}
+                </p>
+                <p style="color: #666; font-size: 0.9rem; margin: 0;">
+                    <strong>Latest price data:</strong> 
+                    {% if last_price_date %}{{ last_price_date|date:"M d, Y" }}{% else %}No prices{% endif %}
+                </p>
+            </div>
+            
+            <button type="button" id="btn-update-prices" style="padding: 0.5rem 1rem; background: #22c55e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
+                🔄 Update Prices Now
+            </button>
+            
+            <span id="update-status" style="margin-left: 1rem; font-size: 0.9rem;"></span>
+        </div>
+    </div>
+</section>
+
+<script>
+document.getElementById('btn-update-prices').addEventListener('click', function() {
+    var btn = this;
+    var status = document.getElementById('update-status');
+    
+    btn.disabled = true;
+    btn.textContent = '⏳ Updating...';
+    status.textContent = '';
+    status.style.color = '#666';
+    
+    fetch('{% url "lab_update_prices" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+        btn.disabled = false;
+        btn.textContent = '🔄 Update Prices Now';
+        
+        if (data.success) {
+            status.style.color = '#22c55e';
+            status.textContent = '✓ Updated ' + data.updated_count + ' tickers at ' + data.timestamp;
+            // Reload page to show updated last update time
+            setTimeout(function() { location.reload(); }, 2000);
+        } else {
+            status.style.color = '#ef4444';
+            status.textContent = '✗ Error: ' + data.error;
+        }
+    })
+    .catch(function(err) {
+        btn.disabled = false;
+        btn.textContent = '🔄 Update Prices Now';
+        status.style.color = '#ef4444';
+        status.textContent = '✗ Network error';
+    });
+});
+</script>
+{% endblock %}

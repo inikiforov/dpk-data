@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+
+{% block title %}Lab | Portfolio Tracker v3{% endblock %}
+
+{% block content %}
+<section>
+    <div style="margin-bottom: 2rem;">
+        <a href="{% url 'lab_index' %}" style="color: var(--secondary-text); text-decoration: none;">&larr; back to lab</a>
+    </div>
+
+    <h1 class="section-title" style="margin-bottom: 2rem;">Portfolio Tracker v3</h1>
+    
+    <!-- Portfolio Selector -->
+    <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem;">
+        <form method="GET" style="display: flex; gap: 1rem; align-items: center;">
+            <select name="portfolio_id" onchange="this.form.submit()" style="padding: 0.5rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 4px;">
+                {% for p in portfolios %}
+                    <option value="{{ p.id }}" {% if selected_portfolio and p.id == selected_portfolio.id %}selected{% endif %}>{{ p.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        
+        {% if selected_portfolio %}
+        <a href="?portfolio_id={{ selected_portfolio.id }}&rebuild=true" 
+           style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border-radius: 4px; text-decoration: none; font-weight: 600;">
+            Rebuild Data
+        </a>
+        {% endif %}
+    </div>
+    
+    <!-- Rebuild Result -->
+    {% if rebuild_result %}
+    <div style="padding: 1rem; background: rgba(34, 197, 94, 0.1); border-radius: 8px; margin-bottom: 2rem;">
+        <strong>Rebuild Complete:</strong>
+        <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+            <li>Prices: {{ rebuild_result.prices.prices_added }} added</li>
+            <li>Dividends: {{ rebuild_result.dividends.dividends_added }} added</li>
+            <li>Transactions: {{ rebuild_result.transactions.transactions_created }} created</li>
+            <li>NAV calculated for {{ rebuild_result.nav.days_calculated }} days</li>
+            <li>Final NAV: {{ rebuild_result.nav.final_nav|floatformat:2 }} ({{ rebuild_result.nav.total_return_pct|floatformat:2 }}%)</li>
+        </ul>
+    </div>
+    {% endif %}
+    
+    {% if summary %}
+    <!-- Summary Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        <div style="padding: 1rem; background: var(--card-bg, rgba(255,255,255,0.05)); border-radius: 8px;">
+            <div style="color: var(--secondary-text); font-size: 0.85rem; margin-bottom: 0.25rem;">Total Value</div>
+            <div style="font-family: var(--font-mono); font-weight: bold; font-size: 1.25rem;">${{ summary.total_value|floatformat:0 }}</div>
+        </div>
+        <div style="padding: 1rem; background: var(--card-bg, rgba(255,255,255,0.05)); border-radius: 8px;">
+            <div style="color: var(--secondary-text); font-size: 0.85rem; margin-bottom: 0.25rem;">NAV</div>
+            <div style="font-family: var(--font-mono); font-weight: bold; font-size: 1.25rem;">{{ summary.nav|floatformat:2 }}</div>
+        </div>
+        <div style="padding: 1rem; background: var(--card-bg, rgba(255,255,255,0.05)); border-radius: 8px;">
+            <div style="color: var(--secondary-text); font-size: 0.85rem; margin-bottom: 0.25rem;">Total Return</div>
+            <div style="font-family: var(--font-mono); font-weight: bold; font-size: 1.25rem; color: {% if summary.total_return_pct >= 0 %}#22c55e{% else %}#ef4444{% endif %};">
+                {% if summary.total_return_pct >= 0 %}+{% endif %}{{ summary.total_return_pct|floatformat:2 }}%
+            </div>
+        </div>
+        <div style="padding: 1rem; background: var(--card-bg, rgba(255,255,255,0.05)); border-radius: 8px;">
+            <div style="color: var(--secondary-text); font-size: 0.85rem; margin-bottom: 0.25rem;">Cash Balance</div>
+            <div style="font-family: var(--font-mono); font-weight: bold; font-size: 1.25rem;">${{ summary.cash_balance|floatformat:0 }}</div>
+        </div>
+        <div style="padding: 1rem; background: var(--card-bg, rgba(255,255,255,0.05)); border-radius: 8px;">
+            <div style="color: var(--secondary-text); font-size: 0.85rem; margin-bottom: 0.25rem;">Units</div>
+            <div style="font-family: var(--font-mono); font-weight: bold; font-size: 1.25rem;">{{ summary.total_units|floatformat:2 }}</div>
+        </div>
+        <div style="padding: 1rem; background: var(--card-bg, rgba(255,255,255,0.05)); border-radius: 8px;">
+            <div style="color: var(--secondary-text); font-size: 0.85rem; margin-bottom: 0.25rem;">Days Tracked</div>
+            <div style="font-family: var(--font-mono); font-weight: bold; font-size: 1.25rem;">{{ summary.days_tracked }}</div>
+        </div>
+    </div>
+    
+    <!-- Current Holdings Table -->
+    {% if current_holdings %}
+    <div style="padding: 1.5rem; background: var(--card-bg, rgba(255,255,255,0.05)); border-radius: 8px; margin-bottom: 2rem;">
+        <h2 style="margin: 0 0 1rem 0; font-size: 1.1rem;">Current Holdings</h2>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--text-color); text-align: left;">
+                        <th style="padding: 0.5rem;">Ticker</th>
+                        <th style="padding: 0.5rem; text-align: right;">Weight</th>
+                        <th style="padding: 0.5rem; text-align: right;">Shares</th>
+                        <th style="padding: 0.5rem; text-align: right;">Avg Cost</th>
+                        <th style="padding: 0.5rem; text-align: right;">Price</th>
+                        <th style="padding: 0.5rem; text-align: right;">Value</th>
+                        <th style="padding: 0.5rem; text-align: right;">Unrealized</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in current_holdings %}
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.5rem; font-weight: 600;">{{ h.ticker }}</td>
+                        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--secondary-text);">{{ h.weight_pct }}%</td>
+                        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">{{ h.shares|floatformat:0 }}</td>
+                        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">${{ h.avg_cost }}</td>
+                        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">${{ h.current_price }}</td>
+                        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">${{ h.current_value|floatformat:0 }}</td>
+                        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: {% if h.unrealized_pnl_pct >= 0 %}#22c55e{% else %}#ef4444{% endif %};">
+                            <strong>{% if h.unrealized_pnl_pct >= 0 %}+{% endif %}{{ h.unrealized_pnl_pct }}%</strong>
+                            <span style="font-size: 0.8rem; opacity: 0.8;"> (${{ h.unrealized_pnl|floatformat:0 }})</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Weekly Performance Chart -->
+    <div style="padding: 1.5rem; background: var(--card-bg, rgba(255,255,255,0.05)); border-radius: 8px; margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 style="margin: 0; font-size: 1.1rem;">Weekly Performance</h2>
+            <div style="display: flex; gap: 0.5rem;">
+                <button id="btn-pct" style="padding: 0.4rem 0.8rem; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">% Return</button>
+                <button id="btn-value" style="padding: 0.4rem 0.8rem; background: transparent; color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; font-size: 0.85rem;">Value</button>
+            </div>
+        </div>
+        <div id="weekly-chart" style="height: 400px;"></div>
+    </div>
+    
+    <!-- Yearly Performance Table -->
+    {% if yearly_performance %}
+    <div style="padding: 1.5rem; background: var(--card-bg, rgba(255,255,255,0.05)); border-radius: 8px; margin-bottom: 2rem;">
+        <h2 style="margin: 0 0 1rem 0; font-size: 1.1rem;">Yearly Performance</h2>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--text-color); text-align: left;">
+                        <th style="padding: 0.75rem 0.5rem;">Year</th>
+                        <th style="padding: 0.75rem 0.5rem; text-align: right;">Return</th>
+                        <th style="padding: 0.75rem 0.5rem; text-align: right;">Start NAV</th>
+                        <th style="padding: 0.75rem 0.5rem; text-align: right;">End NAV</th>
+                        <th style="padding: 0.75rem 0.5rem; text-align: right;">End Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for y in yearly_performance %}
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.75rem 0.5rem; font-weight: 600;">{{ y.year }}</td>
+                        <td style="padding: 0.75rem 0.5rem; text-align: right; font-family: var(--font-mono); color: {% if y.return_pct >= 0 %}#22c55e{% else %}#ef4444{% endif %};">
+                            {% if y.return_pct >= 0 %}+{% endif %}{{ y.return_pct|floatformat:2 }}%
+                        </td>
+                        <td style="padding: 0.75rem 0.5rem; text-align: right; font-family: var(--font-mono);">{{ y.start_nav|floatformat:2 }}</td>
+                        <td style="padding: 0.75rem 0.5rem; text-align: right; font-family: var(--font-mono);">{{ y.end_nav|floatformat:2 }}</td>
+                        <td style="padding: 0.75rem 0.5rem; text-align: right; font-family: var(--font-mono);">${{ y.end_value|floatformat:0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Closed Positions Table -->
+    {% if closed_positions %}
+    <div style="padding: 1.5rem; background: var(--card-bg, rgba(255,255,255,0.05)); border-radius: 8px; margin-bottom: 2rem;">
+        <h2 style="margin: 0 0 1rem 0; font-size: 1.1rem;">Closed Positions</h2>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--text-color); text-align: left;">
+                        <th style="padding: 0.5rem;">Ticker</th>
+                        <th style="padding: 0.5rem; text-align: right;">Shares</th>
+                        <th style="padding: 0.5rem; text-align: right;">Cost</th>
+                        <th style="padding: 0.5rem; text-align: right;">Proceeds</th>
+                        <th style="padding: 0.5rem; text-align: right;">Realized P&L</th>
+                        <th style="padding: 0.5rem; text-align: right;">%</th>
+                        <th style="padding: 0.5rem; text-align: right;">Days Held</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in closed_positions %}
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.5rem; font-weight: 600;">{{ p.ticker }}{% if not p.fully_closed %} *{% endif %}</td>
+                        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">{{ p.shares_sold }}</td>
+                        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">${{ p.total_cost|floatformat:0 }}</td>
+                        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">${{ p.total_proceeds|floatformat:0 }}</td>
+                        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: {% if p.realized_pnl >= 0 %}#22c55e{% else %}#ef4444{% endif %};">
+                            {% if p.realized_pnl >= 0 %}+{% endif %}${{ p.realized_pnl|floatformat:0 }}
+                        </td>
+                        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: {% if p.realized_pnl_pct >= 0 %}#22c55e{% else %}#ef4444{% endif %};">
+                            {% if p.realized_pnl_pct >= 0 %}+{% endif %}{{ p.realized_pnl_pct }}%
+                        </td>
+                        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">{{ p.holding_days }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p style="margin: 0.5rem 0 0; font-size: 0.8rem; color: var(--secondary-text);">* Position still has remaining shares</p>
+    </div>
+    {% endif %}
+    
+    <!-- Chart JavaScript (inline since base template has no extra_js block) -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+    (function() {
+        var navPctData = {{ weekly_chart_data.nav_pct|safe }};
+        var valueData = {{ weekly_chart_data.value|safe }};
+        var chart = null;
+        
+        function showChart(mode) {
+            var btnPct = document.getElementById('btn-pct');
+            var btnValue = document.getElementById('btn-value');
+            
+            btnPct.style.background = mode === 'pct' ? '#3b82f6' : 'transparent';
+            btnPct.style.color = mode === 'pct' ? 'white' : 'inherit';
+            btnPct.style.border = mode === 'pct' ? 'none' : '1px solid #444';
+            
+            btnValue.style.background = mode === 'value' ? '#3b82f6' : 'transparent';
+            btnValue.style.color = mode === 'value' ? 'white' : 'inherit';
+            btnValue.style.border = mode === 'value' ? 'none' : '1px solid #444';
+            
+            var data = mode === 'pct' ? navPctData : valueData;
+            var seriesName = mode === 'pct' ? 'Return %' : 'Value';
+            
+            var options = {
+                series: [{
+                    name: seriesName,
+                    data: data
+                }],
+                chart: {
+                    type: 'area',
+                    height: 400,
+                    background: 'transparent',
+                    toolbar: { show: true },
+                    animations: { enabled: false }
+                },
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth', width: 2 },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.4,
+                        opacityTo: 0.1
+                    }
+                },
+                colors: ['#00E396'],
+                xaxis: {
+                    type: 'datetime',
+                    labels: { style: { colors: '#888' } }
+                },
+                yaxis: {
+                    labels: {
+                        style: { colors: '#888' },
+                        formatter: function(val) {
+                            if (mode === 'pct') {
+                                return (val >= 0 ? '+' : '') + val.toFixed(1) + '%';
+                            } else {
+                                return '$' + val.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                tooltip: {
+                    x: { format: 'MMM dd, yyyy' },
+                    y: {
+                        formatter: function(val) {
+                            if (mode === 'pct') {
+                                return (val >= 0 ? '+' : '') + val.toFixed(2) + '%';
+                            } else {
+                                return '$' + val.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                theme: { mode: 'dark' },
+                grid: { borderColor: '#333' }
+            };
+            
+            if (mode === 'pct') {
+                options.annotations = {
+                    yaxis: [{
+                        y: 0,
+                        borderColor: '#888',
+                        strokeDashArray: 5
+                    }]
+                };
+            }
+            
+            if (chart) {
+                chart.destroy();
+            }
+            chart = new ApexCharts(document.querySelector("#weekly-chart"), options);
+            chart.render();
+        }
+        
+        document.getElementById('btn-pct').addEventListener('click', function() { showChart('pct'); });
+        document.getElementById('btn-value').addEventListener('click', function() { showChart('value'); });
+        
+        // Initial render
+        showChart('pct');
+    })();
+    </script>
+    
+    {% else %}
+    <div style="padding: 3rem; text-align: center; border: 1px dashed var(--border-color); border-radius: 8px;">
+        <p style="color: var(--secondary-text); font-size: 1.1rem;">
+            No data yet. Click "Rebuild Data" to calculate NAV.
+        </p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

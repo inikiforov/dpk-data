@@ -1,0 +1,32 @@
+# Secrets and environment
+SECRETS
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+env/
+
+# Django
+*.log
+staticfiles/
+media/
+
+# Database
+*.sqlite3
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backups
+*.bak

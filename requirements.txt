@@ -1,0 +1,28 @@
+# Core Django
+django>=5.0
+markdown
+Pillow
+yfinance
+apscheduler
+pytz
+
+# Production server
+gunicorn
+
+# Static files handling
+whitenoise
+
+# Environment variables management
+python-decouple
+
+# PostgreSQL support (recommended for production)
+psycopg2-binary
+
+# Database URL parsing (for Railway)
+dj-database-url
+
+# HTTP requests
+requests
+
+# Google Gemini AI
+google-genai

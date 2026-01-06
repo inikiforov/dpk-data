@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}дело пахнет керосином{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=5">
+    <link rel="icon" type="image/png" href="{% static 'favicon.png' %}">
+    
+    {% if not user.is_authenticated %}
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js', 'ym');
+
+        ym(70648543, 'init', {webvisor:true, clickmap:true, accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/70648543" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7H2XHRP5XF"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-7H2XHRP5XF');
+    </script>
+    <!-- /Google tag -->
+    {% endif %}
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="logo">дело пахнет керосином</a>
+            <nav>
+                <a href="https://delopahnetkerosinom.substack.com/" class="nav-link" target="_blank">блог</a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'lab_portfolio_v3' %}" class="nav-link" style="margin-left: 1rem;">portfolio</a>
+                {% endif %}
+            </nav>
+        </header>
+
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
+
+        <footer>
+            <!-- Copyright removed as requested -->
+        </footer>
+    </div>
+</body>
+
+</html>

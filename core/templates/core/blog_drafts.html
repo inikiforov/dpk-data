@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section>
+    <div style="margin-bottom: 2rem;">
+        <a href="{% url 'blog_index' %}" style="color: var(--secondary-text); text-decoration: none;">&larr; back to blog</a>
+    </div>
+
+    <h1 class="section-title">drafts</h1>
+    
+    <div style="margin-bottom: 2rem;">
+        <a href="{% url 'blog_editor_new' %}" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">+ New Post</a>
+    </div>
+    
+    {% if drafts %}
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        {% for draft in drafts %}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border-color);">
+            <div>
+                <span style="font-weight: 600;">{{ draft.title|default:"Untitled" }}</span>
+                <span style="color: var(--secondary-text); font-size: 0.85rem; margin-left: 1rem;">Updated: {{ draft.updated_at|date:"M d, Y H:i" }}</span>
+            </div>
+            <a href="{% url 'blog_editor_edit' draft.slug %}" style="padding: 0.4rem 0.8rem; background: var(--card-bg, #333); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 4px; text-decoration: none; font-size: 0.85rem;">Edit</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color: var(--secondary-text);">No drafts found.</p>
+    {% endif %}
+</section>
+{% endblock %}

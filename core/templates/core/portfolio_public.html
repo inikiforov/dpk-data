@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Open Portfolio{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <a href="{% url 'index' %}" style="color: var(--secondary-text); text-decoration: none;">&larr; на главную</a>
+</div>
+
+<section style="margin-bottom: 3rem;">
+    <h2 class="section-title" style="border: none; font-size: 1.1rem; margin-bottom: 1rem;">открытый портфель</h2>
+    <p>
+        Открытый портфель с активной value-стратегией. Портфель открыт в 2025 году и сейчас находится на стадии формирования. Все обновления в телеграм-канале и блоге на сайте.
+    </p>
+</section>
+
+<!-- Current Holdings -->
+{% if current_holdings %}
+<section style="margin-bottom: 3rem;">
+    <h2 class="section-title" style="border: none; font-size: 1.1rem; margin-bottom: 1rem;">текущие позиции</h2>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--text-color); text-align: left;">
+                    <th style="padding: 0.75rem 0.5rem;">Ticker</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">Weight</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">Shares</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">Avg Cost</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">Price</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">Value</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">Unrealized</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in current_holdings %}
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem 0.5rem; font-weight: 600;">{{ h.ticker }}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right;">{{ h.weight_pct }}%</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right;">{{ h.shares }}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right;">${{ h.avg_cost|floatformat:2 }}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right;">${{ h.current_price|floatformat:2 }}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right;">${{ h.current_value|floatformat:0 }}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right; color: {% if h.unrealized_pnl_pct >= 0 %}#22c55e{% else %}#ef4444{% endif %};">
+                        {% if h.unrealized_pnl_pct >= 0 %}+{% endif %}{{ h.unrealized_pnl_pct|floatformat:2 }}%
+                        <span style="opacity: 0.7;">(${% if h.unrealized_pnl >= 0 %}{% endif %}{{ h.unrealized_pnl|floatformat:0 }})</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+
+<!-- Closed Positions -->
+{% if closed_positions %}
+<section style="margin-bottom: 3rem;">
+    <h2 class="section-title" style="border: none; font-size: 1.1rem; margin-bottom: 1rem;">закрытые позиции</h2>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--text-color); text-align: left;">
+                    <th style="padding: 0.75rem 0.5rem;">Ticker</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">Shares</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">Cost</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">Proceeds</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">Realized P&L</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">%</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">Days Held</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in closed_positions %}
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem 0.5rem; font-weight: 600;">{{ p.ticker }}{% if not p.fully_closed %} *{% endif %}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right;">{{ p.shares_sold }}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right;">${{ p.total_cost|floatformat:0 }}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right;">${{ p.total_proceeds|floatformat:0 }}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right; color: {% if p.realized_pnl >= 0 %}#22c55e{% else %}#ef4444{% endif %};">
+                        {% if p.realized_pnl >= 0 %}+{% endif %}${{ p.realized_pnl|floatformat:0 }}
+                    </td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right; color: {% if p.realized_pnl_pct >= 0 %}#22c55e{% else %}#ef4444{% endif %};">
+                        {% if p.realized_pnl_pct >= 0 %}+{% endif %}{{ p.realized_pnl_pct|floatformat:2 }}%
+                    </td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right;">{{ p.holding_days }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p style="color: var(--secondary-text); font-size: 0.85rem; margin-top: 0.5rem;">* Position still has remaining shares</p>
+</section>
+{% endif %}
+
+<!-- Yearly Performance -->
+{% if yearly_performance %}
+<section style="margin-bottom: 3rem;">
+    <h2 class="section-title" style="border: none; font-size: 1.1rem; margin-bottom: 1rem;">результаты по годам</h2>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--text-color); text-align: left;">
+                    <th style="padding: 0.75rem 0.5rem;">Year</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">Return</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">Start NAV</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">End NAV</th>
+                    <th style="padding: 0.75rem 0.5rem; text-align: right;">End Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for yp in yearly_performance %}
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem 0.5rem; font-weight: 600;">{{ yp.year }}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right; color: {% if yp.return_pct >= 0 %}#22c55e{% else %}#ef4444{% endif %};">
+                        {% if yp.return_pct >= 0 %}+{% endif %}{{ yp.return_pct|floatformat:2 }}%
+                    </td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right;">{{ yp.start_nav|floatformat:2 }}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right;">{{ yp.end_nav|floatformat:2 }}</td>
+                    <td style="padding: 0.75rem 0.5rem; text-align: right;">${{ yp.end_value|floatformat:0 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+
+<!-- Charts Section -->
+<section style="margin-bottom: 3rem;">
+    <h2 class="section-title" style="border: none; font-size: 1.1rem; margin-bottom: 1rem;">графики доходности и стоимости портфеля</h2>
+    
+    <div style="margin-bottom: 2rem;">
+        <h3 style="font-size: 0.9rem; color: var(--secondary-text); margin-bottom: 0.5rem;">доходность (%)</h3>
+        <div id="chart-return" style="height: 300px;"></div>
+    </div>
+    
+    <div>
+        <h3 style="font-size: 0.9rem; color: var(--secondary-text); margin-bottom: 0.5rem;">стоимость ($)</h3>
+        <div id="chart-value" style="height: 300px;"></div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const weeklyData = {{ weekly_chart_data|safe }};
+    
+    const chartOptions = {
+        chart: {
+            type: 'line',
+            height: 300,
+            toolbar: { show: false },
+            background: 'transparent',
+            animations: { enabled: false }
+        },
+        stroke: { curve: 'smooth', width: 2 },
+        xaxis: {
+            type: 'datetime',
+            labels: { style: { colors: '#888' } }
+        },
+        yaxis: { labels: { style: { colors: '#888' } } },
+        grid: { borderColor: '#333' },
+        tooltip: { theme: 'dark' }
+    };
+    
+    if (weeklyData.nav_pct && weeklyData.nav_pct.length > 0) {
+        new ApexCharts(document.querySelector("#chart-return"), {
+            ...chartOptions,
+            series: [{ name: 'Return %', data: weeklyData.nav_pct }],
+            colors: ['#22c55e'],
+            yaxis: { 
+                labels: { 
+                    style: { colors: '#888' },
+                    formatter: (val) => val.toFixed(1) + '%'
+                }
+            }
+        }).render();
+    }
+    
+    if (weeklyData.value && weeklyData.value.length > 0) {
+        new ApexCharts(document.querySelector("#chart-value"), {
+            ...chartOptions,
+            series: [{ name: 'Value $', data: weeklyData.value }],
+            colors: ['#3b82f6'],
+            yaxis: { 
+                labels: { 
+                    style: { colors: '#888' },
+                    formatter: (val) => '$' + val.toLocaleString()
+                }
+            }
+        }).render();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,246 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500;700&display=swap');
+
+:root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --secondary-text: #666666;
+    --link-color: #000000;
+    --border-color: #eeeeee;
+    --font-sans: 'Inter', sans-serif;
+    --font-mono: 'Roboto Mono', monospace;
+    --color-green: #00a000;
+    --color-red: #d00000;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-sans);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.logo,
+.nav-link,
+.post-meta {
+    font-family: var(--font-mono);
+}
+
+a {
+    color: var(--link-color);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+}
+
+a:hover {
+    text-decoration-thickness: 2px;
+}
+
+/* Layout */
+.container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4rem;
+    padding-top: 2rem;
+}
+
+.logo {
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-decoration: none;
+}
+
+.nav-link {
+    font-size: 1rem;
+    text-decoration: underline;
+}
+
+/* Sections */
+section {
+    margin-bottom: 4rem;
+}
+
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--text-color);
+    display: inline-block;
+    padding-bottom: 0.2rem;
+}
+
+/* Typography */
+p {
+    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
+}
+
+ul {
+    list-style-type: square;
+    padding-left: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+li {
+    margin-bottom: 0.5rem;
+}
+
+/* Blog List */
+.post-item {
+    display: block;
+    margin-bottom: 2rem;
+    text-decoration: none;
+}
+
+.post-item:hover .post-title {
+    text-decoration-thickness: 2px;
+}
+
+.post-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 0.25rem;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+}
+
+.post-meta {
+    font-size: 0.85rem;
+    color: var(--secondary-text);
+}
+
+/* Blog Detail */
+.post-detail header {
+    display: block;
+    margin-bottom: 0;
+}
+
+.post-detail h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.post-content {
+    margin-top: 3rem;
+}
+
+.post-content h2 {
+    font-size: 1.5rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.post-content h3 {
+    font-size: 1.25rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.post-content img {
+    max-width: 100%;
+    height: auto;
+    margin: 2rem 0;
+    border: 1px solid var(--border-color);
+}
+
+.post-content pre {
+    background: #f5f5f5;
+    padding: 1rem;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    margin: 1.5rem 0;
+    border-radius: 4px;
+}
+
+.post-content code {
+    font-family: var(--font-mono);
+    background: #f5f5f5;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+/* Tables */
+.post-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+}
+
+.post-content th,
+.post-content td {
+    border: 1px solid var(--border-color);
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+}
+
+.post-content th {
+    background: #f8f8f8;
+    font-weight: 600;
+}
+
+.post-content tr:hover {
+    background: #fafafa;
+}
+
+.post-content td:first-child,
+.post-content th:first-child {
+    font-weight: 500;
+}
+
+/* CTA Buttons - Style links with background-color as buttons */
+.post-content a[style*="background-color"] {
+    display: inline-block;
+    padding: 12px 28px;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: opacity 0.2s;
+}
+
+.post-content a[style*="background-color"]:hover {
+    opacity: 0.9;
+    text-decoration: none !important;
+}
+
+/* Centered button paragraphs */
+.post-content p.ql-align-center {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .container {
+        padding: 1rem;
+    }
+
+    header {
+        margin-bottom: 3rem;
+    }
+}
