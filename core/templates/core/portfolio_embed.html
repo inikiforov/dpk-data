@@ -5,28 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio Chart</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: transparent;
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: auto;
+            overflow-x: hidden;
+            background: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
-        .chart-container { padding: 0.5rem; }
-        .chart-label {
-            font-size: 0.8rem;
-            color: #888;
-            margin-bottom: 0.25rem;
-            margin-top: 1rem;
+        .chart-container {
+            width: 100%;
+            max-width: 100%;
+            padding: 1rem 0.5rem;
         }
-        .chart-label:first-child { margin-top: 0; }
+        .chart-section {
+            margin-bottom: 1.5rem;
+        }
+        .chart-section:last-child {
+            margin-bottom: 0;
+        }
+        .chart-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #666;
+            margin-bottom: 0.5rem;
+            padding-left: 0.25rem;
+        }
+        .chart-wrapper {
+            width: 100%;
+        }
+        /* Override ApexCharts default overflow behavior */
+        .apexcharts-canvas {
+            max-width: 100% !important;
+        }
     </style>
 </head>
 <body>
     <div class="chart-container">
-        <div class="chart-label">доходность (%)</div>
-        <div id="chart-return" style="height: 250px;"></div>
+        <div class="chart-section">
+            <div class="chart-label">доходность (%)</div>
+            <div class="chart-wrapper">
+                <div id="chart-return"></div>
+            </div>
+        </div>
 
-        <div class="chart-label">стоимость ($)</div>
-        <div id="chart-value" style="height: 250px;"></div>
+        <div class="chart-section">
+            <div class="chart-label">стоимость ($)</div>
+            <div class="chart-wrapper">
+                <div id="chart-value"></div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -36,30 +68,71 @@
 
         const chartOptions = {
             chart: {
-                type: 'line',
-                height: 250,
+                type: 'area',
+                height: 280,
                 toolbar: { show: false },
                 background: 'transparent',
-                animations: { enabled: false }
+                animations: { enabled: true, easing: 'easeinout', speed: 600 },
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                parentHeightOffset: 0,
+                sparkline: { enabled: false },
+                zoom: { enabled: false }
             },
-            stroke: { curve: 'smooth', width: 2 },
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 2.5 },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.3,
+                    opacityTo: 0.05,
+                    stops: [0, 95, 100]
+                }
+            },
             xaxis: {
                 type: 'datetime',
-                labels: { style: { colors: '#888' } }
+                labels: {
+                    style: { colors: '#999', fontSize: '11px' },
+                    datetimeUTC: false
+                },
+                axisBorder: { show: false },
+                axisTicks: { show: false }
             },
-            yaxis: { labels: { style: { colors: '#888' } } },
-            grid: { borderColor: '#e5e5e5' },
-            tooltip: { theme: 'light' }
+            yaxis: {
+                labels: {
+                    style: { colors: '#999', fontSize: '11px' },
+                    offsetX: -5
+                }
+            },
+            grid: {
+                borderColor: '#f0f0f0',
+                strokeDashArray: 3,
+                xaxis: { lines: { show: false } },
+                padding: { left: 5, right: 15 }
+            },
+            tooltip: {
+                theme: 'light',
+                style: { fontSize: '12px' },
+                x: { format: 'dd MMM yyyy' }
+            }
         };
 
         if (weeklyData.nav_pct && weeklyData.nav_pct.length > 0) {
             new ApexCharts(document.querySelector("#chart-return"), {
                 ...chartOptions,
-                series: [{ name: 'Return %', data: weeklyData.nav_pct }],
+                series: [{ name: 'Доходность', data: weeklyData.nav_pct }],
                 colors: ['#22c55e'],
+                fill: {
+                    ...chartOptions.fill,
+                    gradient: { ...chartOptions.fill.gradient, colorStops: [
+                        { offset: 0, color: '#22c55e', opacity: 0.25 },
+                        { offset: 100, color: '#22c55e', opacity: 0.02 }
+                    ]}
+                },
                 yaxis: {
+                    ...chartOptions.yaxis,
                     labels: {
-                        style: { colors: '#888' },
+                        ...chartOptions.yaxis.labels,
                         formatter: (val) => val.toFixed(1) + '%'
                     }
                 }
@@ -69,11 +142,19 @@
         if (weeklyData.value && weeklyData.value.length > 0) {
             new ApexCharts(document.querySelector("#chart-value"), {
                 ...chartOptions,
-                series: [{ name: 'Value $', data: weeklyData.value }],
+                series: [{ name: 'Стоимость', data: weeklyData.value }],
                 colors: ['#3b82f6'],
+                fill: {
+                    ...chartOptions.fill,
+                    gradient: { ...chartOptions.fill.gradient, colorStops: [
+                        { offset: 0, color: '#3b82f6', opacity: 0.25 },
+                        { offset: 100, color: '#3b82f6', opacity: 0.02 }
+                    ]}
+                },
                 yaxis: {
+                    ...chartOptions.yaxis,
                     labels: {
-                        style: { colors: '#888' },
+                        ...chartOptions.yaxis.labels,
                         formatter: (val) => '$' + val.toLocaleString()
                     }
                 }
