@@ -9,6 +9,7 @@ urlpatterns = [
     # Public pages
     path('', views.index, name='index'),
     path('open/', views.portfolio_public, name='portfolio_public'),
+    path('open/chart-embed/', views.portfolio_chart_embed, name='portfolio_chart_embed'),
     
     # Portfolio management (login required)
     path('lab/portfolio-v3/', views.lab_portfolio_v3, name='lab_portfolio_v3'),

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Chart</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .chart-container { padding: 0.5rem; }
+        .chart-label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 0.25rem;
+            margin-top: 1rem;
+        }
+        .chart-label:first-child { margin-top: 0; }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <div class="chart-label">доходность (%)</div>
+        <div id="chart-return" style="height: 250px;"></div>
+
+        <div class="chart-label">стоимость ($)</div>
+        <div id="chart-value" style="height: 250px;"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const weeklyData = {{ weekly_chart_data|safe }};
+
+        const chartOptions = {
+            chart: {
+                type: 'line',
+                height: 250,
+                toolbar: { show: false },
+                background: 'transparent',
+                animations: { enabled: false }
+            },
+            stroke: { curve: 'smooth', width: 2 },
+            xaxis: {
+                type: 'datetime',
+                labels: { style: { colors: '#888' } }
+            },
+            yaxis: { labels: { style: { colors: '#888' } } },
+            grid: { borderColor: '#e5e5e5' },
+            tooltip: { theme: 'light' }
+        };
+
+        if (weeklyData.nav_pct && weeklyData.nav_pct.length > 0) {
+            new ApexCharts(document.querySelector("#chart-return"), {
+                ...chartOptions,
+                series: [{ name: 'Return %', data: weeklyData.nav_pct }],
+                colors: ['#22c55e'],
+                yaxis: {
+                    labels: {
+                        style: { colors: '#888' },
+                        formatter: (val) => val.toFixed(1) + '%'
+                    }
+                }
+            }).render();
+        }
+
+        if (weeklyData.value && weeklyData.value.length > 0) {
+            new ApexCharts(document.querySelector("#chart-value"), {
+                ...chartOptions,
+                series: [{ name: 'Value $', data: weeklyData.value }],
+                colors: ['#3b82f6'],
+                yaxis: {
+                    labels: {
+                        style: { colors: '#888' },
+                        formatter: (val) => '$' + val.toLocaleString()
+                    }
+                }
+            }).render();
+        }
+    });
+    </script>
+</body>
+</html>

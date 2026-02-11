@@ -5,6 +5,7 @@ Lab analysis tools are in dpk-lab project.
 import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
@@ -220,6 +221,20 @@ def portfolio_public(request):
         context['closed_positions'] = PortfolioEngineV3.get_closed_positions(portfolio)
     
     return render(request, 'core/portfolio_public.html', context)
+
+
+@xframe_options_exempt
+def portfolio_chart_embed(request):
+    """Embeddable chart-only view for iframe use on external sites (e.g. WordPress)."""
+    from .models import Portfolio
+    from .services import PortfolioEngineV3
+
+    portfolio = Portfolio.objects.filter(id=2).first()
+    weekly_chart_data = PortfolioEngineV3.get_weekly_chart_data(portfolio) if portfolio else {'nav_pct': [], 'value': []}
+
+    return render(request, 'core/portfolio_embed.html', {
+        'weekly_chart_data': weekly_chart_data,
+    })
 
 
 @login_required
