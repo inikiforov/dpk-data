@@ -10,6 +10,9 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('open/', views.portfolio_public, name='portfolio_public'),
     path('open/chart-embed/', views.portfolio_chart_embed, name='portfolio_chart_embed'),
+    path('open/embed/return/', views.embed_return_chart, name='embed_return_chart'),
+    path('open/embed/value/', views.embed_value_chart, name='embed_value_chart'),
+    path('open/embed/holdings/', views.embed_holdings, name='embed_holdings'),
     
     # Portfolio management (login required)
     path('lab/portfolio-v3/', views.lab_portfolio_v3, name='lab_portfolio_v3'),

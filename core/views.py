@@ -237,6 +237,42 @@ def portfolio_chart_embed(request):
     })
 
 
+@xframe_options_exempt
+def embed_return_chart(request):
+    """Embeddable return % chart only."""
+    from .models import Portfolio
+    from .services import PortfolioEngineV3
+
+    portfolio = Portfolio.objects.filter(id=2).first()
+    chart_data = PortfolioEngineV3.get_weekly_chart_data(portfolio)['nav_pct'] if portfolio else []
+
+    return render(request, 'core/embed_return.html', {'chart_data': chart_data})
+
+
+@xframe_options_exempt
+def embed_value_chart(request):
+    """Embeddable portfolio value chart only."""
+    from .models import Portfolio
+    from .services import PortfolioEngineV3
+
+    portfolio = Portfolio.objects.filter(id=2).first()
+    chart_data = PortfolioEngineV3.get_weekly_chart_data(portfolio)['value'] if portfolio else []
+
+    return render(request, 'core/embed_value.html', {'chart_data': chart_data})
+
+
+@xframe_options_exempt
+def embed_holdings(request):
+    """Embeddable current holdings table."""
+    from .models import Portfolio
+    from .services import PortfolioEngineV3
+
+    portfolio = Portfolio.objects.filter(id=2).first()
+    current_holdings = PortfolioEngineV3.get_current_holdings(portfolio) if portfolio else []
+
+    return render(request, 'core/embed_holdings.html', {'current_holdings': current_holdings})
+
+
 @login_required
 def lab_portfolio_v3(request):
     """Portfolio Tracker v3 - NAV/Unitization Engine (full management view)."""
