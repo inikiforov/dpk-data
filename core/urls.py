@@ -34,6 +34,7 @@ urlpatterns = [
     path('data/passive/chart-performance/', api_views.api_passive_chart_performance, name='api_passive_chart_performance'),
     path('data/passive/chart-value/', api_views.api_passive_chart_value, name='api_passive_chart_value'),
     path('data/passive/holdings/', api_views.api_passive_current_holdings, name='api_passive_current_holdings'),
+    path('data/passive/holdings-summary/', api_views.api_passive_holdings_summary, name='api_passive_holdings_summary'),
     path('data/passive/closed-positions/', api_views.api_passive_closed_positions, name='api_passive_closed_positions'),
     
     # Legacy endpoints (backward compatibility)

@@ -148,6 +148,25 @@ def api_passive_current_holdings(request):
     """Current holdings for the passive portfolio."""
     return _current_holdings(request, 'passive')
 
+def api_passive_holdings_summary(request):
+    """Holdings summary for passive portfolio — no dollar values exposed."""
+    if request.method == 'OPTIONS':
+        return cors_preflight()
+    from .services import PortfolioEngineV3
+    portfolio = _get_portfolio('passive')
+    if not portfolio:
+        return cors_response({'error': 'Portfolio not found'}, status=404)
+    full_data = PortfolioEngineV3.get_current_holdings(portfolio)
+    # Strip dollar values, keep only: ticker, weight, avg cost, price, P&L %
+    summary = [{
+        'ticker': h['ticker'],
+        'weight_pct': h.get('weight_pct', 0),
+        'avg_cost': round(h.get('avg_cost', 0), 2),
+        'current_price': round(h.get('current_price', 0), 2),
+        'pnl_pct': round(h.get('unrealized_pnl_pct', 0), 2),
+    } for h in full_data]
+    return cors_response({'data': summary})
+
 def api_passive_closed_positions(request):
     """Closed positions for the passive portfolio."""
     return _closed_positions(request, 'passive')
