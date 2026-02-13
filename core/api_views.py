@@ -3,8 +3,10 @@ Public JSON API views for WordPress consumption.
 No authentication required. CORS restricted to delopahnetkerosinom.ru.
 """
 from django.http import JsonResponse, HttpResponse
+from django.contrib.admin.views.decorators import staff_member_required
 
 
+@staff_member_required
 def api_index(request):
     """Public API documentation page with clickable endpoint links."""
     html = """<!DOCTYPE html>
