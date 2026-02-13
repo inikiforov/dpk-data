@@ -29,14 +29,10 @@ urlpatterns = [
     path('data/active/holdings/', api_views.api_active_current_holdings, name='api_active_current_holdings'),
     path('data/active/closed-positions/', api_views.api_active_closed_positions, name='api_active_closed_positions'),
     
-    # Passive portfolio (ID=1)
-    path('data/passive/performance/', api_views.api_passive_performance, name='api_passive_performance'),
+    # Passive portfolio (ID=1) — % only, no dollar values
     path('data/passive/performance-summary/', api_views.api_passive_performance_summary, name='api_passive_performance_summary'),
     path('data/passive/chart-performance/', api_views.api_passive_chart_performance, name='api_passive_chart_performance'),
-    path('data/passive/chart-value/', api_views.api_passive_chart_value, name='api_passive_chart_value'),
-    path('data/passive/holdings/', api_views.api_passive_current_holdings, name='api_passive_current_holdings'),
     path('data/passive/holdings-summary/', api_views.api_passive_holdings_summary, name='api_passive_holdings_summary'),
-    path('data/passive/closed-positions/', api_views.api_passive_closed_positions, name='api_passive_closed_positions'),
     
     # Legacy endpoints (backward compatibility)
     path('data/active-performance/', api_views.api_active_performance),
