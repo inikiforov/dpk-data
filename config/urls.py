@@ -1,5 +1,5 @@
 """
-URL configuration for dpk-blog project.
+URL configuration for dpk-data project.
 Routes: index, portfolio, blog
 """
 from django.contrib import admin

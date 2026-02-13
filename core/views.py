@@ -1,5 +1,5 @@
 """
-Views for dpk-blog: index, portfolio, and settings.
+Views for dpk-data: index, portfolio, and settings.
 All views require staff/admin login.
 """
 import json

@@ -1,5 +1,5 @@
 """
-WSGI config for dpk-blog project.
+WSGI config for dpk-data project.
 """
 
 import os

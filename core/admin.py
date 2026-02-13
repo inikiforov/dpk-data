@@ -1,5 +1,5 @@
 """
-Admin configuration for dpk-blog.
+Admin configuration for dpk-data.
 Portfolio management.
 """
 from django.contrib import admin

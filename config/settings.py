@@ -1,5 +1,5 @@
 """
-Django settings for dpk-blog project.
+Django settings for dpk-data project.
 Deployment: api.delopahnetkerosinom.ru (Timeweb Cloud).
 """
 

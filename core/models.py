@@ -1,5 +1,5 @@
 """
-dpk-blog models: Portfolio entities.
+dpk-data models: Portfolio entities.
 Lab-specific models (StockValuation, FinancialStatement, etc.) are in dpk-lab.
 """
 from django.db import models

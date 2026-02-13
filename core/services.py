@@ -1,5 +1,5 @@
 """
-Services for dpk-blog: PortfolioEngineV3 (portfolio performance).
+Services for dpk-data: PortfolioEngineV3 (portfolio performance).
 Lab-specific services (FMPService, AlphaFactorService) are in dpk-lab.
 """
 import yfinance as yf

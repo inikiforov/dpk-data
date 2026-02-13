@@ -1,5 +1,5 @@
 """
-URL routes for dpk-blog.
+URL routes for dpk-data.
 Includes: index, portfolio, settings, public data API.
 """
 from django.urls import path
