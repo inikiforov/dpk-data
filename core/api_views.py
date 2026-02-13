@@ -136,6 +136,19 @@ def api_passive_performance(request):
     """Yearly performance for the passive portfolio (current year first)."""
     return _yearly_performance(request, 'passive')
 
+def api_passive_performance_summary(request):
+    """Yearly return % only for the passive portfolio — no NAV or dollar values."""
+    if request.method == 'OPTIONS':
+        return cors_preflight()
+    from .services import PortfolioEngineV3
+    portfolio = _get_portfolio('passive')
+    if not portfolio:
+        return cors_response({'error': 'Portfolio not found'}, status=404)
+    full_data = PortfolioEngineV3.get_yearly_performance(portfolio)
+    full_data.sort(key=lambda x: x['year'], reverse=True)
+    summary = [{'year': d['year'], 'return_pct': round(d['return_pct'], 2)} for d in full_data]
+    return cors_response({'data': summary})
+
 def api_passive_chart_performance(request):
     """Weekly NAV % return chart for the passive portfolio."""
     return _chart_weekly_performance(request, 'passive')

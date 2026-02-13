@@ -31,6 +31,7 @@ urlpatterns = [
     
     # Passive portfolio (ID=1)
     path('data/passive/performance/', api_views.api_passive_performance, name='api_passive_performance'),
+    path('data/passive/performance-summary/', api_views.api_passive_performance_summary, name='api_passive_performance_summary'),
     path('data/passive/chart-performance/', api_views.api_passive_chart_performance, name='api_passive_chart_performance'),
     path('data/passive/chart-value/', api_views.api_passive_chart_value, name='api_passive_chart_value'),
     path('data/passive/holdings/', api_views.api_passive_current_holdings, name='api_passive_current_holdings'),
