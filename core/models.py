@@ -1,84 +1,8 @@
 """
-dpk-blog models: Blog + Portfolio entities.
+dpk-blog models: Portfolio entities.
 Lab-specific models (StockValuation, FinancialStatement, etc.) are in dpk-lab.
 """
 from django.db import models
-from django.utils.text import slugify
-import markdown
-
-
-class BlogPost(models.Model):
-    title = models.CharField(max_length=500)
-    slug = models.SlugField(unique=True, blank=True)
-    content = models.TextField(blank=True)  # Markdown content (legacy)
-    content_html = models.TextField(blank=True)  # WYSIWYG HTML content
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    published = models.BooleanField(default=False)
-    
-    # Post options
-    featured_image = models.TextField(blank=True, help_text="Featured image URL or data URI for post cards")
-    excerpt = models.TextField(max_length=300, blank=True, help_text="Short excerpt for previews")
-    
-    # SEO fields
-    meta_title = models.CharField(max_length=70, blank=True, help_text="SEO title (max 60-70 chars)")
-    meta_description = models.CharField(max_length=160, blank=True, help_text="SEO description (max 155-160 chars)")
-    og_image = models.TextField(blank=True, help_text="Open Graph image URL or data URI for social sharing")
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
-        super().save(*args, **kwargs)
-
-    def get_html_content(self):
-        # Use HTML content if available, otherwise convert markdown
-        if self.content_html:
-            return self.content_html
-        return markdown.markdown(self.content, extensions=['fenced_code', 'codehilite'])
-    
-    def get_excerpt(self):
-        """Return excerpt or auto-generate from content"""
-        if self.excerpt:
-            return self.excerpt
-        # Strip HTML and get first 200 chars
-        import re
-        text = re.sub(r'<[^>]+>', '', self.content_html or self.content)
-        text = text.strip()
-        if len(text) > 200:
-            return text[:197] + '...'
-        return text
-    
-    def get_meta_title(self):
-        return self.meta_title or self.title
-    
-    def get_meta_description(self):
-        return self.meta_description or self.excerpt or ""
-
-    def __str__(self):
-        return self.title
-
-
-class Media(models.Model):
-    file = models.FileField(upload_to='uploads/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-    description = models.CharField(max_length=200, blank=True)
-
-    def __str__(self):
-        return self.description or self.file.name
-
-
-class SEOReport(models.Model):
-    """Stores AI-generated SEO analysis reports for blog posts."""
-    post = models.ForeignKey(BlogPost, on_delete=models.CASCADE, related_name='seo_reports')
-    content = models.TextField()  # The raw analysis content
-    model = models.CharField(max_length=50, default="gemini-2.5-flash")
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-created_at']
-
-    def __str__(self):
-        return f"SEO Report for '{self.post.title}' - {self.created_at.date()}"
 
 
 # ============================================================

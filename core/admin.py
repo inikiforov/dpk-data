@@ -1,32 +1,13 @@
 """
 Admin configuration for dpk-blog.
-Includes Blog + Portfolio management.
+Portfolio management.
 """
 from django.contrib import admin
 from .models import (
-    BlogPost, Media, SEOReport, Portfolio, Trade, CashTransaction, 
+    Portfolio, Trade, CashTransaction, 
     MarketDataCache, TransactionLog, DailySnapshot,
     PriceHistory, DividendHistory, LiveQuote, SiteSettings
 )
-
-
-@admin.register(BlogPost)
-class BlogPostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'created_at', 'published')
-    prepopulated_fields = {'slug': ('title',)}
-    search_fields = ('title', 'content')
-    list_filter = ('published', 'created_at')
-
-
-@admin.register(Media)
-class MediaAdmin(admin.ModelAdmin):
-    list_display = ('description', 'uploaded_at', 'file')
-
-
-@admin.register(SEOReport)
-class SEOReportAdmin(admin.ModelAdmin):
-    list_display = ('post', 'model', 'created_at')
-    list_filter = ('model', 'created_at')
 
 
 @admin.register(Portfolio)

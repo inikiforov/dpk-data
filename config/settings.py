@@ -1,6 +1,6 @@
 """
 Django settings for dpk-blog project.
-Online deployment: index, portfolio tracker, and blog.
+Deployment: api.delopahnetkerosinom.ru (Timeweb Cloud).
 """
 
 import os
@@ -19,22 +19,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-lzp31glic&+v0x6z5bd9qmd&k=ab6d)c(wfcu$4f_u*^mo*d+k')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# TEMPORARY: Enabled for debugging 500 error
-DEBUG = True  # os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '.railway.app',  # Allows all Railway subdomains
-    'web-production-fbcef.up.railway.app',  # Your specific Railway domain
-    'delopahnetkerosinom.ru',  # Custom domain
-    'www.delopahnetkerosinom.ru',  # www subdomain
+    'api.delopahnetkerosinom.ru',
+    'delopahnetkerosinom.ru',
+    'www.delopahnetkerosinom.ru',
 ]
 
 # CSRF trusted origins (required for Django 4+ with HTTPS)
 CSRF_TRUSTED_ORIGINS = [
-    'https://web-production-fbcef.up.railway.app',
-    'https://*.railway.app',
+    'https://api.delopahnetkerosinom.ru',
     'https://delopahnetkerosinom.ru',
     'https://www.delopahnetkerosinom.ru',
 ]

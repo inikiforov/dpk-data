@@ -1,6 +1,7 @@
 # Secrets and environment
 SECRETS
 .env
+production_data.json
 
 # Python
 __pycache__/

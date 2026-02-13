@@ -234,6 +234,39 @@ li {
     margin: 2rem 0;
 }
 
+/* Tool Link Cards */
+.link-card {
+    margin-bottom: 1rem;
+}
+
+.tool-link {
+    display: block;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--border-color);
+    text-decoration: none;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.tool-link:hover {
+    border-color: var(--text-color);
+    background-color: #fafafa;
+    text-decoration: none;
+}
+
+.tool-name {
+    display: block;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+}
+
+.tool-desc {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--secondary-text);
+}
+
 /* Mobile */
 @media (max-width: 600px) {
     .container {

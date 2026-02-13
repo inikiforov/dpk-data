@@ -1,12 +1,13 @@
 """
 URL routes for dpk-blog.
-Includes: index, portfolio, blog, settings.
+Includes: index, portfolio, settings, public data API.
 """
 from django.urls import path
 from . import views
+from . import api_views
 
 urlpatterns = [
-    # Public pages
+    # Public pages (staff only)
     path('', views.index, name='index'),
     path('open/', views.portfolio_public, name='portfolio_public'),
     path('open/chart-embed/', views.portfolio_chart_embed, name='portfolio_chart_embed'),
@@ -14,17 +15,13 @@ urlpatterns = [
     path('open/embed/value/', views.embed_value_chart, name='embed_value_chart'),
     path('open/embed/holdings/', views.embed_holdings, name='embed_holdings'),
     
-    # Portfolio management (login required)
+    # Portfolio management (staff only)
     path('lab/portfolio-v3/', views.lab_portfolio_v3, name='lab_portfolio_v3'),
     path('lab/settings/', views.lab_settings, name='lab_settings'),
     path('lab/settings/update-prices/', views.lab_update_prices, name='lab_update_prices'),
     
-    # Blog
-    path('blog/', views.blog_index, name='blog_index'),
-    path('blog/drafts/', views.blog_drafts, name='blog_drafts'),
-    path('blog/new/', views.blog_editor, name='blog_editor_new'),
-    path('blog/edit/<slug:slug>/', views.blog_editor, name='blog_editor_edit'),
-    path('blog/api/upload-image/', views.blog_upload_image, name='blog_upload_image'),
-    path('blog/api/seo-report/<slug:slug>/', views.blog_seo_report, name='blog_seo_report'),
-    path('blog/<slug:slug>/', views.post_detail, name='post_detail'),
+    # Public data API (no auth, CORS-restricted)
+    path('data/active-performance/', api_views.api_active_performance, name='api_active_performance'),
+    path('data/active-current-holdings/', api_views.api_active_current_holdings, name='api_active_current_holdings'),
+    path('data/active-performance-chart-weekly/', api_views.api_active_performance_chart_weekly, name='api_active_performance_chart_weekly'),
 ]
