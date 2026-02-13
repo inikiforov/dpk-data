@@ -21,6 +21,7 @@ urlpatterns = [
     path('lab/settings/update-prices/', views.lab_update_prices, name='lab_update_prices'),
     
     # ── Public Data API (no auth, CORS-restricted) ──────────────
+    path('data/', api_views.api_index, name='api_index'),
     
     # Active portfolio (ID=2)
     path('data/active/performance/', api_views.api_active_performance, name='api_active_performance'),

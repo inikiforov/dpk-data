@@ -2,7 +2,53 @@
 Public JSON API views for WordPress consumption.
 No authentication required. CORS restricted to delopahnetkerosinom.ru.
 """
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
+
+
+def api_index(request):
+    """Public API documentation page with clickable endpoint links."""
+    html = """<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dpk-data API</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, system-ui, sans-serif; max-width: 720px; margin: 0 auto; padding: 2rem 1rem; color: #222; }
+  h1 { font-size: 1.4rem; margin-bottom: 0.3rem; }
+  .subtitle { color: #888; margin-bottom: 2rem; font-size: 0.9rem; }
+  h2 { font-size: 1.1rem; margin: 2rem 0 0.8rem; border-bottom: 1px solid #eee; padding-bottom: 0.3rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th { text-align: left; padding: 6px 8px; border-bottom: 2px solid #333; }
+  td { padding: 6px 8px; border-bottom: 1px solid #eee; }
+  a { color: #2563eb; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .note { color: #888; font-size: 0.8rem; margin-top: 2rem; }
+</style>
+</head><body>
+<h1>dpk-data API</h1>
+<p class="subtitle">Public JSON endpoints for portfolio data</p>
+
+<h2>Active Portfolio</h2>
+<table>
+<tr><th>Endpoint</th><th>Description</th></tr>
+<tr><td><a href="/data/active/performance/">/data/active/performance/</a></td><td>Yearly returns (newest first)</td></tr>
+<tr><td><a href="/data/active/chart-performance/">/data/active/chart-performance/</a></td><td>Weekly NAV % chart data</td></tr>
+<tr><td><a href="/data/active/chart-value/">/data/active/chart-value/</a></td><td>Weekly $ value chart data</td></tr>
+<tr><td><a href="/data/active/holdings/">/data/active/holdings/</a></td><td>Current holdings (full)</td></tr>
+<tr><td><a href="/data/active/closed-positions/">/data/active/closed-positions/</a></td><td>Closed positions with realized P&amp;L</td></tr>
+</table>
+
+<h2>Passive Portfolio <span style="font-weight:normal; color:#888;">(% only)</span></h2>
+<table>
+<tr><th>Endpoint</th><th>Description</th></tr>
+<tr><td><a href="/data/passive/performance-summary/">/data/passive/performance-summary/</a></td><td>Year + return % only</td></tr>
+<tr><td><a href="/data/passive/chart-performance/">/data/passive/chart-performance/</a></td><td>Weekly NAV % chart data</td></tr>
+<tr><td><a href="/data/passive/holdings-summary/">/data/passive/holdings-summary/</a></td><td>Ticker, weight, avg cost, price, P&amp;L %</td></tr>
+</table>
+
+<p class="note">CORS: restricted to delopahnetkerosinom.ru &middot; Cache: 5 min</p>
+</body></html>"""
+    return HttpResponse(html)
 
 ALLOWED_ORIGIN = 'https://delopahnetkerosinom.ru'
 
