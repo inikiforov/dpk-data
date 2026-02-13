@@ -6,6 +6,12 @@ from django.http import JsonResponse
 
 ALLOWED_ORIGIN = 'https://delopahnetkerosinom.ru'
 
+# Portfolio IDs
+PORTFOLIO_IDS = {
+    'active': 2,
+    'passive': 1,
+}
+
 
 def cors_response(data, status=200):
     """Create a JsonResponse with CORS headers."""
@@ -27,49 +33,121 @@ def cors_preflight():
     return response
 
 
-def api_active_performance(request):
-    """Yearly performance data for the active portfolio."""
+def _get_portfolio(portfolio_type):
+    """Get portfolio by type ('active' or 'passive')."""
+    from .models import Portfolio
+    pid = PORTFOLIO_IDS.get(portfolio_type)
+    if not pid:
+        return None
+    return Portfolio.objects.filter(id=pid).first()
+
+
+# ============================================================
+# Generic endpoint builders
+# ============================================================
+
+def _yearly_performance(request, portfolio_type):
     if request.method == 'OPTIONS':
         return cors_preflight()
-
-    from .models import Portfolio
     from .services import PortfolioEngineV3
-
-    portfolio = Portfolio.objects.filter(id=2).first()
+    portfolio = _get_portfolio(portfolio_type)
     if not portfolio:
         return cors_response({'error': 'Portfolio not found'}, status=404)
-
     data = PortfolioEngineV3.get_yearly_performance(portfolio)
+    # Reverse order: current year first
+    data.sort(key=lambda x: x['year'], reverse=True)
     return cors_response({'data': data})
 
 
-def api_active_current_holdings(request):
-    """Current holdings for the active portfolio."""
+def _chart_weekly_performance(request, portfolio_type):
     if request.method == 'OPTIONS':
         return cors_preflight()
-
-    from .models import Portfolio
     from .services import PortfolioEngineV3
-
-    portfolio = Portfolio.objects.filter(id=2).first()
+    portfolio = _get_portfolio(portfolio_type)
     if not portfolio:
         return cors_response({'error': 'Portfolio not found'}, status=404)
+    data = PortfolioEngineV3.get_weekly_chart_data(portfolio)
+    return cors_response({'nav_pct': data.get('nav_pct', [])})
 
+
+def _chart_weekly_value(request, portfolio_type):
+    if request.method == 'OPTIONS':
+        return cors_preflight()
+    from .services import PortfolioEngineV3
+    portfolio = _get_portfolio(portfolio_type)
+    if not portfolio:
+        return cors_response({'error': 'Portfolio not found'}, status=404)
+    data = PortfolioEngineV3.get_weekly_chart_data(portfolio)
+    return cors_response({'value': data.get('value', [])})
+
+
+def _current_holdings(request, portfolio_type):
+    if request.method == 'OPTIONS':
+        return cors_preflight()
+    from .services import PortfolioEngineV3
+    portfolio = _get_portfolio(portfolio_type)
+    if not portfolio:
+        return cors_response({'error': 'Portfolio not found'}, status=404)
     data = PortfolioEngineV3.get_current_holdings(portfolio)
     return cors_response({'data': data})
 
 
-def api_active_performance_chart_weekly(request):
-    """Weekly chart data (NAV % return and portfolio value) for the active portfolio."""
+def _closed_positions(request, portfolio_type):
     if request.method == 'OPTIONS':
         return cors_preflight()
-
-    from .models import Portfolio
     from .services import PortfolioEngineV3
-
-    portfolio = Portfolio.objects.filter(id=2).first()
+    portfolio = _get_portfolio(portfolio_type)
     if not portfolio:
         return cors_response({'error': 'Portfolio not found'}, status=404)
+    data = PortfolioEngineV3.get_closed_positions(portfolio)
+    return cors_response({'data': data})
 
-    data = PortfolioEngineV3.get_weekly_chart_data(portfolio)
-    return cors_response(data)
+
+# ============================================================
+# Active Portfolio Endpoints (portfolio ID=2)
+# ============================================================
+
+def api_active_performance(request):
+    """Yearly performance for the active portfolio (current year first)."""
+    return _yearly_performance(request, 'active')
+
+def api_active_chart_performance(request):
+    """Weekly NAV % return chart for the active portfolio."""
+    return _chart_weekly_performance(request, 'active')
+
+def api_active_chart_value(request):
+    """Weekly portfolio $ value chart for the active portfolio."""
+    return _chart_weekly_value(request, 'active')
+
+def api_active_current_holdings(request):
+    """Current holdings for the active portfolio."""
+    return _current_holdings(request, 'active')
+
+def api_active_closed_positions(request):
+    """Closed positions for the active portfolio."""
+    return _closed_positions(request, 'active')
+
+
+# ============================================================
+# Passive Portfolio Endpoints (portfolio ID=1)
+# ============================================================
+
+def api_passive_performance(request):
+    """Yearly performance for the passive portfolio (current year first)."""
+    return _yearly_performance(request, 'passive')
+
+def api_passive_chart_performance(request):
+    """Weekly NAV % return chart for the passive portfolio."""
+    return _chart_weekly_performance(request, 'passive')
+
+def api_passive_chart_value(request):
+    """Weekly portfolio $ value chart for the passive portfolio."""
+    return _chart_weekly_value(request, 'passive')
+
+def api_passive_current_holdings(request):
+    """Current holdings for the passive portfolio."""
+    return _current_holdings(request, 'passive')
+
+def api_passive_closed_positions(request):
+    """Closed positions for the passive portfolio."""
+    return _closed_positions(request, 'passive')
