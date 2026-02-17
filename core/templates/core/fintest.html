@@ -364,7 +364,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(payload)
             });
 
-            const data = await resp.json();
+            const text = await resp.text();
+            let data;
+            
+            try {
+                data = JSON.parse(text);
+            } catch (err) {
+                // If response is not JSON (e.g. 500/403 HTML), throw meaningful error
+                throw new Error(`Server returned non-JSON response (${resp.status}): ${text.substring(0, 100)}...`);
+            }
 
             if (!resp.ok || data.error) {
                 throw new Error(data.error || `Server Error: ${resp.status}`);
@@ -376,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (e) {
             console.error(e);
-            alert("Ошибка при отправке ответов: " + e.message);
+            alert("Error: " + e.message);
             ui.btnNext.textContent = "Завершить";
             ui.btnNext.disabled = false;
         }
