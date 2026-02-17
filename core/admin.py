@@ -167,4 +167,66 @@ class LiveQuoteAdmin(admin.ModelAdmin):
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
-    list_display = ('live_quotes_enabled', 'live_quotes_interval', 'last_quote_update', 'last_update_count')
+    list_display = ('fintest_active_edition', 'live_quotes_enabled', 'live_quotes_interval', 'last_quote_update')
+    list_editable = ('fintest_active_edition',)
+    list_display_links = None # Allow editing all fields including first one
+
+
+# ============================================================
+# Fintest Admin
+# ============================================================
+
+from .models import FintestQuestion, FintestResult
+
+class ActiveFilter(admin.SimpleListFilter):
+    title = 'Is Active'
+    parameter_name = 'is_active'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', 'Yes'),
+            ('no', 'No'),
+            ('all', 'All'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'no':
+            return queryset.filter(is_active=False)
+        if self.value() == 'all':
+            return queryset
+        return queryset.filter(is_active=True)
+
+@admin.register(FintestQuestion)
+class FintestQuestionAdmin(admin.ModelAdmin):
+    list_display = ('order', 'text_preview', 'edition', 'correct_answer', 'is_active')
+    list_display_links = ('text_preview',)
+    list_editable = ('order', 'is_active', 'correct_answer', 'edition')
+    list_filter = (ActiveFilter, 'edition')
+    
+    fieldsets = (
+        ('General', {
+            'fields': ('edition', 'order', 'is_active', 'text')
+        }),
+        ('Options', {
+            'fields': ('option_a', 'option_b', 'option_c', 'option_d', 'option_e'),
+            'description': 'Leave options blank if fewer than 5 are needed.'
+        }),
+        ('Answer', {
+            'fields': ('correct_answer', 'explanation')
+        }),
+    )
+
+    def text_preview(self, obj):
+        return obj.text[:80] + "..." if len(obj.text) > 80 else obj.text
+    text_preview.short_description = "Question Text"
+
+
+@admin.register(FintestResult)
+class FintestResultAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'edition', 'age_group', 'experience', 'score_display', 'is_repeat_user')
+    list_filter = ('edition', 'age_group', 'experience', 'created_at', 'is_repeat_user')
+    readonly_fields = ('created_at', 'edition', 'answers_json', 'is_repeat_user')
+
+    def score_display(self, obj):
+        pct = int((obj.total_correct / obj.total_questions) * 100) if obj.total_questions > 0 else 0
+        return f"{obj.total_correct}/{obj.total_questions} ({pct}%)"

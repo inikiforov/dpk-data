@@ -35,6 +35,11 @@ urlpatterns = [
     path('data/passive/chart-performance/', api_views.api_passive_chart_performance, name='api_passive_chart_performance'),
     path('data/passive/holdings-summary/', api_views.api_passive_holdings_summary, name='api_passive_holdings_summary'),
     
+    # Fintest — Public Financial Literacy Quiz
+    path('fintest/', views.fintest, name='fintest'),
+    path('fintest/api/questions/', views.fintest_questions, name='fintest_questions'),
+    path('fintest/api/submit/', views.fintest_submit, name='fintest_submit'),
+
     # Legacy endpoints (backward compatibility)
     path('data/active-performance/', api_views.api_active_performance),
     path('data/active-current-holdings/', api_views.api_active_current_holdings),

@@ -250,3 +250,114 @@ def lab_update_prices(request):
         
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+
+
+# ============================================================
+# Fintest Views
+# ============================================================
+
+def fintest(request):
+    """Public financial literacy test (Russian FINRA quiz clone)."""
+    return render(request, 'core/fintest.html')
+
+
+def fintest_questions(request):
+    """API: Get active questions for the current edition."""
+    from .models import FintestQuestion, SiteSettings
+    
+    settings = SiteSettings.get_settings()
+    active_edition = settings.fintest_active_edition
+    
+    questions = FintestQuestion.objects.filter(is_active=True, edition=active_edition).order_by('order')
+    data = []
+    
+    for q in questions:
+        data.append({
+            'id': q.id,
+            'text': q.text,
+            'options': [
+                {'id': 'A', 'text': q.option_a},
+                {'id': 'B', 'text': q.option_b},
+                {'id': 'C', 'text': q.option_c},
+                {'id': 'D', 'text': q.option_d},
+                {'id': 'E', 'text': q.option_e},
+            ]
+        })
+        
+    return JsonResponse({
+        'questions': data,
+        'edition': active_edition
+    })
+
+
+def fintest_submit(request):
+    """API: Submit quiz answers and save results."""
+    from .models import FintestQuestion, FintestResult, SiteSettings
+    import json
+    
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+        
+    try:
+        data = json.loads(request.body)
+        survey = data.get('survey', {})
+        answers = data.get('answers', {}) # map of question_id -> selected_option (A/B/C/D/E)
+        
+        # Determine edition (use active from settings to be safe)
+        settings = SiteSettings.get_settings()
+        active_edition = settings.fintest_active_edition
+        
+        # Fetch active questions for this edition
+        questions = FintestQuestion.objects.filter(is_active=True, edition=active_edition)
+        results = []
+        total_correct = 0
+        
+        for q in questions:
+            selected = answers.get(str(q.id))
+            is_correct = (selected == q.correct_answer)
+            if is_correct:
+                total_correct += 1
+                
+            results.append({
+                'id': q.id,
+                'text': q.text,
+                'selected': selected,
+                'correct_answer': q.correct_answer,
+                'is_correct': is_correct,
+                'explanation': q.explanation,
+                'options': [
+                    {'id': 'A', 'text': q.option_a},
+                    {'id': 'B', 'text': q.option_b},
+                    {'id': 'C', 'text': q.option_c},
+                    {'id': 'D', 'text': q.option_d},
+                    {'id': 'E', 'text': q.option_e},
+                ]
+            })
+            
+        # Check for repeat user cookie
+        is_repeat = request.COOKIES.get('fintest_completed') == 'true'
+
+        # Save result to DB
+        result_obj = FintestResult.objects.create(
+            edition=active_edition,
+            age_group=survey.get('age', ''),
+            experience=survey.get('experience', ''),
+            total_questions=len(questions),
+            total_correct=total_correct,
+            answers_json=results,
+            is_repeat_user=is_repeat
+        )
+        
+        response = JsonResponse({
+            'score_percent': int((total_correct / len(questions)) * 100) if questions else 0,
+            'total_correct': total_correct,
+            'total_questions': len(questions),
+            'results': results
+        })
+
+        # Set cookie to mark user as completed (expires in 1 year)
+        response.set_cookie('fintest_completed', 'true', max_age=365*24*60*60)
+        return response
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

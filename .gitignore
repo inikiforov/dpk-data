@@ -31,3 +31,8 @@ Thumbs.db
 
 # Backups
 *.bak
+# Project Specific
+sources/
+seed_*.py
+debug_output.html
+server_info.md

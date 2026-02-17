@@ -286,6 +286,13 @@ class SiteSettings(models.Model):
     last_quote_update = models.DateTimeField(null=True, blank=True, help_text="Last time quotes were updated")
     last_update_count = models.IntegerField(default=0, help_text="Number of tickers updated in last update")
     
+    # Fintest Settings
+    fintest_active_edition = models.CharField(
+        max_length=10, 
+        default='v1',
+        help_text="Current active version of the quiz (e.g., 'v1', 'v2')"
+    )
+
     class Meta:
         verbose_name = "Site Settings"
         verbose_name_plural = "Site Settings"
@@ -303,3 +310,64 @@ class SiteSettings(models.Model):
         # Ensure only one instance exists
         self.pk = 1
         super().save(*args, **kwargs)
+
+
+# ============================================================
+# Fintest — Financial Literacy Quiz
+# ============================================================
+
+class FintestQuestion(models.Model):
+    """A single quiz question for the financial literacy test."""
+    ANSWER_CHOICES = [
+        ('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D'), ('E', 'E'),
+    ]
+
+    edition = models.CharField(max_length=10, default='v1', help_text="Quiz version")
+    order = models.PositiveIntegerField(default=0, help_text="Display order")
+    text = models.TextField(help_text="Question text (Russian)")
+    option_a = models.CharField(max_length=500)
+    option_b = models.CharField(max_length=500)
+    option_c = models.CharField(max_length=500, blank=True, default='')
+    option_d = models.CharField(max_length=500, blank=True, default='')
+    option_e = models.CharField(max_length=500, blank=True, default='')
+    correct_answer = models.CharField(max_length=1, choices=ANSWER_CHOICES)
+    explanation = models.TextField(help_text="Explanation shown in results")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order']
+        verbose_name = 'Fintest Question'
+        verbose_name_plural = 'Fintest Questions'
+
+    def __str__(self):
+        return f"[{self.edition}] Q{self.order}: {self.text[:60]}"
+
+
+class FintestResult(models.Model):
+    """Stores a single quiz submission with survey data and per-question results."""
+    AGE_CHOICES = [
+        ('<18', 'До 18'), ('18-25', '18-25'), ('26-35', '26-35'),
+        ('36-45', '36-45'), ('46+', '46+'),
+    ]
+    EXPERIENCE_CHOICES = [
+        ('0-2', '0-2 года'), ('3-4', '3-4 года'), ('5+', '5+ лет'),
+    ]
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    edition = models.CharField(max_length=10, default='v1')
+    age_group = models.CharField(max_length=10, choices=AGE_CHOICES)
+    experience = models.CharField(max_length=10, choices=EXPERIENCE_CHOICES)
+    total_questions = models.PositiveIntegerField()
+    total_correct = models.PositiveIntegerField()
+    answers_json = models.JSONField(
+        help_text="Per-question detail: [{question_id, selected, correct, is_correct}]"
+    )
+    is_repeat_user = models.BooleanField(default=False, help_text="User has taken test before (cookie-based)")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Fintest Result'
+        verbose_name_plural = 'Fintest Results'
+
+    def __str__(self):
+        return f"{self.created_at:%Y-%m-%d %H:%M} — {self.total_correct}/{self.total_questions}"
