@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Roboto+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@100..900&display=swap');
 
 :root {
     --bg-color: #ffffff;
@@ -7,7 +7,7 @@
     --link-color: #000000;
     --border-color: #eeeeee;
     --font-sans: 'Inter', sans-serif;
-    --font-mono: 'Roboto Mono', monospace;
+    --font-mono: 'Anonymous Pro', monospace;
     --color-green: #00a000;
     --color-red: #d00000;
 }

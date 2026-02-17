@@ -6,7 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}дело пахнет керосином{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=6">
+    <link rel="stylesheet" href="{% static 'css/header_override.css' %}?v=4">
     <link rel="icon" type="image/png" href="{% static 'favicon.png' %}">
     
     {% if not user.is_authenticated %}
@@ -37,15 +38,27 @@
 </head>
 
 <body>
-    <div class="container">
-        <header>
-            <a href="/" class="logo">дело пахнет керосином</a>
-            <nav>
-                {% if user.is_authenticated %}
-                <a href="{% url 'lab_portfolio_v3' %}" class="nav-link">portfolio</a>
-                {% endif %}
-            </nav>
+    <div class="wp-site-blocks">
+        <header class="wp-block-template-part">
+            <div class="header-container">
+                <div class="header-row">
+                    <!-- Logo / Title Area -->
+                    <div class="site-branding">
+                        <h1 class="wp-block-site-title">
+                            <a href="https://delopahnetkerosinom.ru/" target="_self" rel="home" aria-current="page">дело пахнет керосином</a>
+                        </h1>
+                    </div>
+
+                    <!-- Navigation -->
+                    <nav class="simple-nav">
+                        <a href="https://delopahnetkerosinom.ru/" class="back-link">на главную →</a>
+                    </nav>
+                </div>
+            </div>
         </header>
+    </div>
+
+    <div class="container">
 
         <main>
             {% block content %}

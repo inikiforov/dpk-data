@@ -1,0 +1,584 @@
+{% extends "base.html" %}
+
+{% block title %}финтест | дело пахнет керосином{% endblock %}
+
+{% block content %}
+<script src="https://image.sendsay.ru/app/js/forms/forms.min.js"></script>
+<style>
+    /* Fintest specific styles */
+    .fintest-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding-bottom: 4rem;
+    }
+    
+    .fintest-header {
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1rem;
+    }
+    
+    .progress-bar {
+        font-family: var(--font-mono);
+        color: var(--secondary-text);
+        font-size: 0.9rem;
+    }
+
+    /* Card styles for questions/results */
+    .fintest-card {
+        background: #fff;
+        border: 1px solid var(--border-color);
+        padding: 2rem;
+        border-radius: 8px;
+    }
+
+    /* Survey & Question styles */
+    .question-text {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        line-height: 1.4;
+    }
+
+    .options-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .option-item {
+        margin-bottom: 0.75rem;
+    }
+
+    .option-label {
+        display: flex;
+        align-items: flex-start;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .option-label:hover {
+        background: #f9f9f9;
+        border-color: #999;
+    }
+
+    .option-radio {
+        margin-right: 1rem;
+        margin-top: 0.25rem;
+        flex-shrink: 0;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        background: #000;
+        color: #fff;
+        border: none;
+        padding: 0.8rem 2rem;
+        font-family: var(--font-mono);
+        font-size: 1rem;
+        cursor: pointer;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary:hover {
+        opacity: 0.9;
+    }
+    
+    .btn-primary:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    .btn-nav-group {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+
+    .btn-secondary {
+        background: #fff;
+        color: #000;
+        border: 1px solid #ccc;
+        padding: 0.8rem 1.5rem;
+        font-family: var(--font-mono);
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+    /* Results */
+    .result-summary {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2rem;
+        background: #f5f5f5;
+        border-radius: 8px;
+    }
+    
+    .score-large {
+        font-size: 3rem;
+        font-weight: 700;
+        font-family: var(--font-mono);
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    .result-item {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .result-status {
+        font-weight: 700;
+        font-family: var(--font-mono);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .status-correct { color: var(--color-green); }
+    .status-incorrect { color: var(--color-red); }
+
+    .explanation-box {
+        background: #f0f7ff;
+        padding: 1rem;
+        border-left: 4px solid #0066cc;
+        margin-top: 1rem;
+        font-size: 0.95rem;
+    }
+
+    /* State visibility */
+    .hidden { display: none; }
+
+    /* Sendsey Form */
+    .my-centered-form {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+        width: fit-content;
+    }
+</style>
+
+<div id="fintest-app" class="fintest-container">
+    <div class="fintest-header">
+        <h1>финтест для инвестора</h1>
+        <div id="header-progress" class="progress-bar hidden"></div>
+    </div>
+
+    <!-- 1. START SCREEN -->
+    <div id="screen-start" class="fintest-card">
+        <p>
+            Этот тест поможет оценить ваши знания об инвестициях. 
+            Он основан на методике FINRA (Financial Industry Regulatory Authority) США. Мы перевели его и немного уточнили под наши реалии.
+        </p>
+        <p>
+            Вопросы не сложные, но статистика FINRA показывает, что <strong>западные инвесторы отвечают меньше чем на половину из них правильно</strong>. Мы верим, что наши инвесторы гораздо грамотнее, поэтому решили это проверить на практике.
+        </p>
+        <p>
+            В тесте <strong><span id="q-count-intro">...</span> вопросов</strong>. 
+            Результаты и правильные ответы будут показаны в конце.
+        </p>
+        <div style="text-align: center; margin-top: 2rem;">
+            <button id="btn-start" class="btn-primary">Начать тест</button>
+        </div>
+    </div>
+
+    <!-- 2. SURVEY SCREEN -->
+    <div id="screen-survey" class="fintest-card hidden">
+        <h2 class="section-title">Немного о вас</h2>
+        <p class="mb-4">Перед началом ответьте, пожалуйста, на два вопроса.</p>
+        
+        <div class="mb-4" style="margin-bottom: 2rem;">
+            <label class="question-text" style="display:block; margin-bottom: 0.5rem">Ваш возраст:</label>
+            <div id="survey-age-options">
+                <!-- Radio options for age -->
+                <div class="option-item">
+                    <label class="option-label">
+                        <input type="radio" name="survey_age" value="<18" class="option-radio">
+                        <span>До 18 лет</span>
+                    </label>
+                </div>
+                <div class="option-item">
+                    <label class="option-label">
+                        <input type="radio" name="survey_age" value="18-25" class="option-radio">
+                        <span>18-25 лет</span>
+                    </label>
+                </div>
+                <div class="option-item">
+                    <label class="option-label">
+                        <input type="radio" name="survey_age" value="26-35" class="option-radio">
+                        <span>26-35 лет</span>
+                    </label>
+                </div>
+                <div class="option-item">
+                    <label class="option-label">
+                        <input type="radio" name="survey_age" value="36-45" class="option-radio">
+                        <span>36-45 лет</span>
+                    </label>
+                </div>
+                <div class="option-item">
+                    <label class="option-label">
+                        <input type="radio" name="survey_age" value="46+" class="option-radio">
+                        <span>46+ лет</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-4" style="margin-bottom: 2rem;">
+            <label class="question-text" style="display:block; margin-bottom: 0.5rem">Опыт инвестирования:</label>
+            <div id="survey-exp-options">
+                <!-- Radio options for experience -->
+                <div class="option-item">
+                    <label class="option-label">
+                        <input type="radio" name="survey_experience" value="0-2" class="option-radio">
+                        <span>Нет или до 2 лет</span>
+                    </label>
+                </div>
+                <div class="option-item">
+                    <label class="option-label">
+                        <input type="radio" name="survey_experience" value="3-4" class="option-radio">
+                        <span>3-4 года</span>
+                    </label>
+                </div>
+                <div class="option-item">
+                    <label class="option-label">
+                        <input type="radio" name="survey_experience" value="5+" class="option-radio">
+                        <span>5 лет и более</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <button id="btn-survey-next" class="btn-primary" disabled>Далее</button>
+        </div>
+    </div>
+
+    <!-- 3. QUESTION SCREEN -->
+    <div id="screen-question" class="fintest-card hidden">
+        <div id="question-container">
+            <!-- Rendered by JS -->
+        </div>
+        
+        <div class="btn-nav-group">
+            <button id="btn-prev" class="btn-secondary" style="visibility: hidden;">Назад</button>
+            <button id="btn-next" class="btn-primary" disabled>Далее</button>
+        </div>
+    </div>
+
+    <!-- 4. RESULTS SCREEN -->
+    <div id="screen-results" class=" hidden">
+        <div class="result-summary">
+            <span class="score-large" id="score-percent">0%</span>
+            <p>Вы ответили правильно на <strong id="score-text">0 из 0</strong> вопросов.</p>
+            
+            <div id="results-description" class="hidden" style="margin-top: 2rem; background: #e8f4fd; border-left: 4px solid #2c88d9; padding: 1rem; text-align: left; border-radius: 4px;">
+                <!-- Filled by JS -->
+            </div>
+
+            <div style="margin-top: 3rem; text-align: center;">
+                <p style="margin-bottom: 1.5rem; font-size: 1.1rem; line-height: 1.5;">Я планирую собрать больше 100 ответов наших инвесторов и после этого сравним наши результаты с результатами инвесторов из США. Подпишитесь, чтобы получить анализ, когда он будет готов и посмотреть где вы оказались.</p>
+                <div class="my-centered-form" data-sendsay-form-embedded="x_1771247913944484/1"></div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Подробный разбор</h2>
+        <div id="results-detail">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // State
+    const state = {
+        questions: [],
+        currentIndex: 0,
+        answers: {}, // questionId -> "A"
+        survey: {
+            age: null,
+            experience: null
+        }
+    };
+
+    // DOM Elements
+    const screens = {
+        start: document.getElementById('screen-start'),
+        survey: document.getElementById('screen-survey'),
+        question: document.getElementById('screen-question'),
+        results: document.getElementById('screen-results')
+    };
+    
+    const ui = {
+        headerProgress: document.getElementById('header-progress'),
+        qCountIntro: document.getElementById('q-count-intro'),
+        questionContainer: document.getElementById('question-container'),
+        btnStart: document.getElementById('btn-start'),
+        btnSurveyNext: document.getElementById('btn-survey-next'),
+        btnPrev: document.getElementById('btn-prev'),
+        btnNext: document.getElementById('btn-next'),
+        surveyAge: document.getElementById('survey-age'),
+        surveyExp: document.getElementById('survey-experience'),
+        resultsDetail: document.getElementById('results-detail'),
+        scorePercent: document.getElementById('score-percent'),
+        scoreText: document.getElementById('score-text')
+    };
+
+    // --- API Calls ---
+
+    async function fetchQuestions() {
+        try {
+            const resp = await fetch('/fintest/api/questions/');
+            const data = await resp.json();
+            state.questions = data.questions;
+            ui.qCountIntro.textContent = state.questions.length;
+        } catch (e) {
+            console.error(e);
+            alert("Не удалось загрузить вопросы. Попробуйте обновить страницу.");
+        }
+    }
+
+    async function submitResults() {
+        try {
+            ui.btnNext.textContent = "Загрузка...";
+            ui.btnNext.disabled = true;
+
+            const payload = {
+                survey: state.survey,
+                answers: state.answers
+            };
+
+            const resp = await fetch('/fintest/api/submit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await resp.json();
+            renderResults(data);
+            showScreen('results');
+            ui.headerProgress.classList.add('hidden');
+
+        } catch (e) {
+            console.error(e);
+            alert("Ошибка при отправке ответов.");
+            ui.btnNext.textContent = "Завершить";
+            ui.btnNext.disabled = false;
+        }
+    }
+
+    // --- Navigation & Rendering ---
+
+    function showScreen(screenName) {
+        Object.values(screens).forEach(el => el.classList.add('hidden'));
+        screens[screenName].classList.remove('hidden');
+    }
+
+    function renderQuestion(index) {
+        const q = state.questions[index];
+        const currentAnswer = state.answers[q.id];
+
+        // Header progress
+        ui.headerProgress.textContent = `Вопрос ${index + 1} из ${state.questions.length}`;
+        ui.headerProgress.classList.remove('hidden');
+
+        // Question HTML
+        let html = `<div class="question-text">${q.text}</div>`;
+        html += `<ul class="options-list">`;
+        
+        q.options.forEach(opt => {
+            if (!opt.text) return; // Skip empty options
+            const isChecked = currentAnswer === opt.id ? 'checked' : '';
+            html += `
+                <li class="option-item">
+                    <label class="option-label">
+                        <input type="radio" name="q_${q.id}" value="${opt.id}" class="option-radio" ${isChecked}>
+                        <span>${opt.text}</span>
+                    </label>
+                </li>
+            `;
+        });
+        html += `</ul>`;
+
+        ui.questionContainer.innerHTML = html;
+
+        // Bind events to new radios
+        document.querySelectorAll(`input[name="q_${q.id}"]`).forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                state.answers[q.id] = e.target.value;
+                updateNavButtons();
+            });
+        });
+
+        updateNavButtons();
+    }
+
+    function updateNavButtons() {
+        // Prev button
+        ui.btnPrev.style.visibility = state.currentIndex === 0 ? 'hidden' : 'visible';
+
+        // Next/Finish button
+        const isLast = state.currentIndex === state.questions.length - 1;
+        ui.btnNext.textContent = isLast ? "Завершить" : "Далее";
+        
+        // Disable Next if not answered
+        const currentQId = state.questions[state.currentIndex].id;
+        ui.btnNext.disabled = !state.answers[currentQId];
+    }
+
+    function renderResults(data) {
+        // Score
+        ui.scorePercent.textContent = `${data.score_percent}%`;
+        ui.scoreText.textContent = `${data.total_correct} из ${data.total_questions}`;
+
+        // Interpretation Logic (Based on FINRA benchmarks adapted for 11 questions)
+        const score = data.total_correct;
+        let interpretation = "";
+        
+        if (score <= 4) {
+            // 0-4 (Equivalent to FINRA 0-3)
+            interpretation = `
+                <h3 style="margin-top:0;">Вы еще учитесь (и вы не одиноки)</h3>
+                <p>Вы все еще постигаете азы инвестирования, и вы не одиноки: согласно исследованию NFCS 2021 года, <strong>33% инвесторов</strong> попали в эту категорию. Инвестиции могут казаться сложными, но разобраться в них реально.</p>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(0,0,0,0.1);">
+                    <strong>На что обратить внимание:</strong>
+                    <br>Начните с фундамента: разберитесь, как работает сложный процент, почему инфляция съедает сбережения и какие основные риски несет покупка отдельных акций. Эти знания станут вашей надежной опорой.
+                </div>
+            `;
+        } else if (score <= 8) {
+             // 5-8 (Equivalent to FINRA 4-7)
+            interpretation = `
+                <h3 style="margin-top:0;">Хорошая база, но есть пробелы</h3>
+                <p>Вы, вероятно, знаете основы, но вам может потребоваться освежить знания по более сложным темам. В эту категорию попали <strong>50% инвесторов</strong> (по данным NFCS 2021). В мире финансов легко запутаться в потоке информации.</p>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(0,0,0,0.1);">
+                    <strong>На что обратить внимание:</strong>
+                    <br>Чтобы перейти на следующий уровень, обратите внимание на нюансы: как цены облигаций зависят от процентных ставок и что такое корреляция активов. Заполнение этих пробелов поможет принимать более взвешенные решения.
+                </div>
+            `;
+        } else {
+             // 9-11 (Equivalent to FINRA 8+)
+            interpretation = `
+                <h3 style="margin-top:0;">Сильные знания</h3>
+                <p>Вы отлично подготовились и обладаете прочной базой. Лишь <strong>16% инвесторов</strong> показали такой высокий результат в исследовании NFCS 2021 года. Но рынки постоянно меняются, и всегда есть чему учиться.</p>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(0,0,0,0.1);">
+                    <strong>На что обратить внимание:</strong>
+                    <br>Ваша главная задача — дисциплина. Избегайте эмоциональных решений и излишней самоуверенности, следите за издержками и придерживайтесь своей долгосрочной стратегии.
+                </div>
+            `;
+        }
+        
+        const descContainer = document.getElementById('results-description');
+        if (descContainer) {
+            descContainer.innerHTML = interpretation;
+            descContainer.classList.remove('hidden');
+        }
+
+        // Details
+        let html = '';
+        data.results.forEach((r, idx) => {
+            const statusClass = r.is_correct ? 'status-correct' : 'status-incorrect';
+            const statusIcon = r.is_correct ? '✅ Верно' : '❌ Ошибка';
+            
+            html += `
+                <div class="result-item">
+                    <span class="result-status ${statusClass}">${statusIcon}</span>
+                    <div class="question-text" style="font-size: 1.1rem; margin-bottom: 0.5rem;">${idx + 1}. ${r.text}</div>
+                    
+                    <div style="margin-bottom: 1rem; color: #555;">
+                        Ваш ответ: <strong>${getOptionText(r, r.selected)}</strong><br>
+                        ${!r.is_correct ? `Правильный ответ: <strong>${getOptionText(r, r.correct_answer)}</strong>` : ''}
+                    </div>
+
+                    <div class="explanation-box">
+                        <strong>Пояснение:</strong><br>${r.explanation}
+                    </div>
+                </div>
+            `;
+        });
+        ui.resultsDetail.innerHTML = html;
+    }
+
+    function getOptionText(question, optionId) {
+        const opt = question.options.find(o => o.id === optionId);
+        return opt ? opt.text : optionId;
+    }
+
+    // --- Survey Logic ---
+
+    function checkSurveyCompletion() {
+        const isComplete = state.survey.age && state.survey.experience;
+        ui.btnSurveyNext.disabled = !isComplete;
+    }
+
+    // --- Event Listeners ---
+
+    ui.btnStart.addEventListener('click', () => {
+        showScreen('survey');
+    });
+
+    // Helper to bind radio group
+    function bindRadioGroup(name, stateKey) {
+        document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                state.survey[stateKey] = e.target.value;
+                checkSurveyCompletion();
+            });
+        });
+    }
+
+    bindRadioGroup('survey_age', 'age');
+    bindRadioGroup('survey_experience', 'experience');
+
+    ui.btnSurveyNext.addEventListener('click', () => {
+        showScreen('question');
+        renderQuestion(0);
+    });
+
+    ui.btnPrev.addEventListener('click', () => {
+        if (state.currentIndex > 0) {
+            state.currentIndex--;
+            renderQuestion(state.currentIndex);
+        }
+    });
+
+    ui.btnNext.addEventListener('click', () => {
+        const isLast = state.currentIndex === state.questions.length - 1;
+        if (isLast) {
+            submitResults();
+        } else {
+            state.currentIndex++;
+            renderQuestion(state.currentIndex);
+        }
+    });
+
+    // Helper: CSRF Token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // --- Init ---
+    fetchQuestions();
+});
+</script>
+{% endblock %}
