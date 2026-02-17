@@ -36,6 +36,9 @@ CSRF_TRUSTED_ORIGINS = [
     'https://www.delopahnetkerosinom.ru',
 ]
 
+# Trust Nginx/Proxy to set the scheme (fixes CSRF Origin checks)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Application definition
 
