@@ -10,6 +10,104 @@
 /* =========================================
    Reset <header> from style.css
    ========================================= */
+header.wp-block-template-part {
+    display: block;
+    width: 100%;
+    margin-bottom: 2rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    background-color: #ffffff;
+}
+
+/* =========================================
+   Container & Layout
+   ========================================= */
+.header-container {
+    max-width: 1340px;
+    width: 100%;
+    margin: 0 auto;
+    padding-left: clamp(20px, 5vw, 40px);
+    padding-right: clamp(20px, 5vw, 40px);
+    box-sizing: border-box;
+}
+
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    flex-wrap: wrap; /* Allow wrapping on very small screens */
+    gap: 1rem;
+}
+
+/* =========================================
+   Branding (Left)
+   ========================================= */
+.site-branding {
+    flex-shrink: 1; /* Allow shrinking */
+}
+
+.wp-block-site-title {
+    font-family: var(--wp--preset--font-family--anonymous-pro);
+    font-size: 1.5rem; /* Match original style.css .logo size */
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+    text-transform: lowercase;
+}
+
+.wp-block-site-title a {
+    text-decoration: none;
+    color: #000;
+}
+
+/* =========================================
+   Navigation (Right)
+   ========================================= */
+.simple-nav {
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.simple-nav .back-link {
+    font-family: var(--wp--preset--font-family--anonymous-pro);
+    font-size: 1rem;
+    color: #000;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.simple-nav .back-link:hover {
+    text-decoration-thickness: 2px;
+}
+
+/* =========================================
+   Mobile
+   ========================================= */
+@media (max-width: 600px) {
+    .header-row {
+        flex-direction: row; /* Keep row even on mobile if it fits */
+        align-items: center;
+    }
+    
+    .wp-block-site-title {
+        font-size: 1.25rem; /* Smaller on mobile */
+    }
+    
+    .simple-nav .back-link {
+        font-size: 0.9rem;
+    }
+}
+
+:root {
+    --wp--preset--font-family--anonymous-pro: "Anonymous Pro", monospace;
+    --wp--preset--font-family--inter: Inter, sans-serif;
+    --wp--preset--color--contrast: #111111;
+}
+
+/* =========================================
+   Reset <header> from style.css
+   ========================================= */
 /* style.css applies display:flex, margins, etc to 'header'. We must override these specifically for our new header. */
 header.wp-block-template-part {
     display: block !important;
