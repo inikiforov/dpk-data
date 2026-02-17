@@ -166,7 +166,7 @@
 
 <div id="fintest-app" class="fintest-container">
     <div class="fintest-header">
-        <h1>финтест для инвестора</h1>
+        <h1>тест для инвестора</h1>
         <div id="header-progress" class="progress-bar hidden"></div>
     </div>
 
@@ -365,13 +365,18 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                throw new Error(data.error || `Server Error: ${resp.status}`);
+            }
+
             renderResults(data);
             showScreen('results');
             ui.headerProgress.classList.add('hidden');
 
         } catch (e) {
             console.error(e);
-            alert("Ошибка при отправке ответов.");
+            alert("Ошибка при отправке ответов: " + e.message);
             ui.btnNext.textContent = "Завершить";
             ui.btnNext.disabled = false;
         }
